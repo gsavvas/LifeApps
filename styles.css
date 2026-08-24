@@ -425,12 +425,13 @@ main {
 .matrix-grid {
   display: grid;
   gap: 0.75rem;
-  grid-template-columns: minmax(9rem, 0.65fr) repeat(3, minmax(0, 1fr)) minmax(7rem, 0.45fr);
-  min-width: 1040px;
+  grid-template-columns: minmax(5.5rem, 0.4fr) minmax(7rem, 0.55fr) repeat(3, minmax(7.5rem, 1fr)) minmax(5.5rem, 0.4fr);
+  min-width: 900px;
 }
 
 .matrix-axis-label,
 .matrix-header,
+.matrix-user-label,
 .matrix-cell,
 .matrix-total-cell {
   border: 1px solid var(--line);
@@ -439,7 +440,8 @@ main {
 }
 
 .matrix-axis-label,
-.matrix-header {
+.matrix-header,
+.matrix-user-label {
   align-items: center;
   background: var(--primary-soft);
   color: var(--primary-dark);
@@ -450,6 +452,24 @@ main {
   text-align: center;
 }
 
+.matrix-column-user-label {
+  grid-column: span 3;
+}
+
+.matrix-row-user-label {
+  background: var(--accent-soft);
+  grid-row: span 3;
+}
+
+.matrix-totals-label {
+  background: var(--surface);
+}
+
+.matrix-top-left-spacer,
+.matrix-total-header {
+  grid-column: span 2;
+}
+
 .matrix-row-header {
   background: var(--accent-soft);
 }
@@ -457,7 +477,7 @@ main {
 .matrix-cell {
   align-items: center;
   display: flex;
-  height: 10rem;
+  height: 8rem;
   justify-content: center;
   position: relative;
 }
@@ -482,7 +502,7 @@ main {
   font-size: 1.15rem;
   font-weight: 900;
   justify-content: center;
-  min-height: 5rem;
+  min-height: 4rem;
 }
 
 .matrix-total-cell.grand-total {

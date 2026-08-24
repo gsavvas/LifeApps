@@ -734,9 +734,27 @@ function renderComparisonMatrix(values, activeUser, comparedUser) {
   const matrixGrid = document.createElement("div");
   matrixGrid.className = "matrix-grid";
 
+  const topLeftSpacer = document.createElement("div");
+  topLeftSpacer.className = "matrix-axis-label matrix-top-left-spacer";
+  matrixGrid.append(topLeftSpacer);
+
+  const columnUserLabel = document.createElement("div");
+  columnUserLabel.className = "matrix-user-label matrix-column-user-label";
+  columnUserLabel.textContent = comparedUser.name;
+  matrixGrid.append(columnUserLabel);
+
+  const totalsLabel = document.createElement("div");
+  totalsLabel.className = "matrix-user-label matrix-totals-label";
+  totalsLabel.textContent = "Totals";
+  matrixGrid.append(totalsLabel);
+
+  const rowUserSpacer = document.createElement("div");
+  rowUserSpacer.className = "matrix-axis-label";
+  matrixGrid.append(rowUserSpacer);
+
   const corner = document.createElement("div");
   corner.className = "matrix-axis-label";
-  corner.textContent = `Rows: ${activeUser.name} / Columns: ${comparedUser.name}`;
+  corner.textContent = "Selection";
   matrixGrid.append(corner);
 
   comparisonGroupOrder.forEach((group) => {
@@ -746,6 +764,11 @@ function renderComparisonMatrix(values, activeUser, comparedUser) {
     matrixGrid.append(header);
   });
   matrixGrid.append(createMatrixTotalCell("Row Total"));
+
+  const rowUserLabel = document.createElement("div");
+  rowUserLabel.className = "matrix-user-label matrix-row-user-label";
+  rowUserLabel.textContent = activeUser.name;
+  matrixGrid.append(rowUserLabel);
 
   comparisonGroupOrder.forEach((activeGroup) => {
     const rowHeader = document.createElement("div");

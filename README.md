@@ -63,7 +63,7 @@ Comparison rules:
 Comparison views:
 
 - `Three columns`: groups cards into Very Different, Slightly Different, and Same columns. Each column shows a count and total.
-- `3x3 matrix`: rows represent the selected user's value choice and columns represent the compared user's value choice. Each cell is the same size and shows a proportional circle with the count inside; hover over a circle to see the values in that cell in a large floating tooltip. Matching cells are dark gray, one-level differences are light gray, and opposite answers are white. The matrix also includes row totals, column totals, and a grand total.
+- `3x3 matrix`: rows represent the selected user's value choice and columns represent the compared user's value choice, with color-coded user labels. The compared user's label spans the three response columns, and the selected user's label sits in its own left-side column spanning the three response rows. Each cell is the same size and shows a proportional circle with the count inside; hover over a circle to see the values in that cell in a large floating tooltip. Matching cells are dark gray, one-level differences are light gray, and opposite answers are white. The matrix also includes row totals, column totals, and a grand total.
 
 ## Run Locally
 
