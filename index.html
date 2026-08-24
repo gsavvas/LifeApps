@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LifeApps</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#bucketlister" aria-label="LifeApps home">
+        <span class="brand-mark">LA</span>
+        <span>LifeApps</span>
+      </a>
+      <nav class="top-nav" aria-label="Main navigation">
+        <a class="nav-link active" href="#bucketlister" data-section-link="bucketlister">Bucketlister</a>
+        <a class="nav-link" href="#value-aligner" data-section-link="value-aligner">Value Aligner</a>
+      </nav>
+      <div class="user-switcher" aria-label="User selection">
+        <label>
+          Acting as
+          <select id="user-select"></select>
+        </label>
+        <form class="user-form" id="user-form">
+          <label class="sr-only" for="new-user-name">New user name</label>
+          <input id="new-user-name" type="text" autocomplete="off" placeholder="New user name" />
+          <button type="submit">Create User</button>
+        </form>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <p class="eyebrow">Local life planning tools</p>
+        <h1>Map what matters, then make space for it.</h1>
+        <p>
+          Use Bucketlister to place future experiences into life-stage buckets, then use
+          Value Aligner to clarify which values should guide those choices.
+        </p>
+        <p class="current-user">Currently acting as <strong id="current-user-name"></strong>.</p>
+      </section>
+
+      <section id="bucketlister" class="app-section active" data-section="bucketlister" aria-labelledby="bucketlister-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Task 1</p>
+            <h2 id="bucketlister-title">Bucketlister</h2>
+          </div>
+          <button class="secondary-button" type="button" id="reset-bucketlister">Reset Bucketlister</button>
+        </div>
+
+        <div class="panel setup-panel">
+          <div>
+            <h3>Plan Settings</h3>
+            <p>Choose the planning range and whether buckets cover 5 or 10 years.</p>
+          </div>
+          <form class="setup-grid" id="bucket-settings-form">
+            <label>
+              Current age
+              <input id="current-age" type="number" min="0" max="120" inputmode="numeric" />
+            </label>
+            <label>
+              Plan through age
+              <input id="target-age" type="number" min="1" max="130" inputmode="numeric" />
+            </label>
+            <label>
+              Bucket size
+              <select id="bucket-size">
+                <option value="5">5 years</option>
+                <option value="10">10 years</option>
+              </select>
+            </label>
+          </form>
+        </div>
+
+        <div class="content-grid">
+          <div class="panel">
+            <h3>Add Bucket List Items</h3>
+            <form class="add-form" id="bucket-item-form">
+              <label class="full-width">
+                What would you like to do?
+                <input id="bucket-item-input" type="text" autocomplete="off" placeholder="Visit Japan, write a book, learn piano..." />
+              </label>
+              <button type="submit">Add Item</button>
+            </form>
+            <div class="item-list" id="bucket-item-list" aria-live="polite"></div>
+          </div>
+
+          <div class="panel bucket-panel">
+            <div class="bucket-panel-heading">
+              <h3>Life Buckets</h3>
+              <p>Assign each item to the season when it feels most alive.</p>
+            </div>
+            <div class="bucket-grid" id="bucket-grid"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="value-aligner" class="app-section" data-section="value-aligner" aria-labelledby="value-aligner-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Task 2</p>
+            <h2 id="value-aligner-title">Value Aligner</h2>
+          </div>
+          <button class="secondary-button" type="button" id="reset-values">Reset Values</button>
+        </div>
+
+        <div class="panel">
+          <h3>Sort Values</h3>
+          <p>
+            Place each value into the group that best describes how strongly it matters to you right now.
+          </p>
+          <form class="add-form" id="custom-value-form">
+            <label class="full-width">
+              Add your own value
+              <input id="custom-value-input" type="text" autocomplete="off" placeholder="Spirituality, craftsmanship, patience..." />
+            </label>
+            <button type="submit">Add Value</button>
+          </form>
+        </div>
+
+        <div class="panel compare-panel">
+          <div>
+            <h3>Compare Value Sorts</h3>
+            <p>
+              Choose another user to compare sorted values. Values left unsorted by either user are not included.
+            </p>
+          </div>
+          <label>
+            Compare with
+            <select id="compare-user-select">
+              <option value="">No comparison</option>
+            </select>
+          </label>
+          <div class="comparison-results" id="comparison-results" hidden>
+            <p class="comparison-summary" id="comparison-summary"></p>
+            <fieldset class="comparison-view-toggle">
+              <legend>Comparison view</legend>
+              <label>
+                <input type="radio" name="comparison-view" value="columns" checked />
+                Three columns
+              </label>
+              <label>
+                <input type="radio" name="comparison-view" value="matrix" />
+                3x3 matrix
+              </label>
+            </fieldset>
+            <div class="comparison-columns" id="comparison-columns-view">
+              <div class="comparison-column">
+                <h3>Very Different <span class="count-badge" id="very-different-count">0</span></h3>
+                <p>One user chose very important and the other chose not important.</p>
+                <div class="comparison-list" id="very-different-values"></div>
+              </div>
+              <div class="comparison-column">
+                <h3>Slightly Different <span class="count-badge" id="slightly-different-count">0</span></h3>
+                <p>One user chose important, and the other chose very important or not important.</p>
+                <div class="comparison-list" id="slightly-different-values"></div>
+              </div>
+              <div class="comparison-column">
+                <h3>Same <span class="count-badge" id="same-count">0</span></h3>
+                <p>Both users chose the same importance level.</p>
+                <div class="comparison-list" id="same-values"></div>
+              </div>
+            </div>
+            <div class="comparison-matrix" id="comparison-matrix-view" hidden></div>
+          </div>
+        </div>
+
+        <div class="value-layout">
+          <aside class="panel value-bank">
+            <h3>Unsorted Values</h3>
+            <div class="value-card-list" id="value-bank"></div>
+          </aside>
+
+          <div class="value-columns" aria-live="polite">
+            <div class="value-column" data-value-group="notImportant">
+              <h3>Not Important To Me</h3>
+              <div class="value-card-list" id="not-important-values"></div>
+            </div>
+            <div class="value-column" data-value-group="important">
+              <h3>Important To Me</h3>
+              <div class="value-card-list" id="important-values"></div>
+            </div>
+            <div class="value-column accent" data-value-group="veryImportant">
+              <h3>Very Important To Me</h3>
+              <div class="value-card-list" id="very-important-values"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="app.js" defer></script>
+  </body>
+</html>
