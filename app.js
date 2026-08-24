@@ -745,7 +745,7 @@ function renderComparisonMatrix(values, activeUser, comparedUser) {
 
     comparisonGroupOrder.forEach((comparedGroup) => {
       const cellValues = matrix[activeGroup][comparedGroup];
-      matrixGrid.append(createMatrixCell(cellValues));
+      matrixGrid.append(createMatrixCell(cellValues, activeGroup, comparedGroup, matrix.maxCount));
     });
   });
 
@@ -763,24 +763,55 @@ function buildComparisonMatrix(values) {
   values.forEach((value) => {
     matrix[value.activeGroup][value.comparedGroup].push(value);
   });
+  matrix.maxCount = Math.max(0, ...values.map((value) => matrix[value.activeGroup][value.comparedGroup].length));
 
   return matrix;
 }
 
-function createMatrixCell(values) {
+function createMatrixCell(values, activeGroup, comparedGroup, maxCount) {
   const cell = document.createElement("div");
   cell.className = "matrix-cell";
 
-  const count = document.createElement("span");
-  count.className = "count-badge";
-  count.textContent = values.length;
-  cell.append(count);
+  if (!values.length) {
+    return cell;
+  }
 
+  const bubble = document.createElement("div");
+  bubble.className = "matrix-bubble";
+  bubble.tabIndex = 0;
+  bubble.style.setProperty("--bubble-size", `${getMatrixBubbleSize(values.length, maxCount)}px`);
+  bubble.textContent = values.length;
+  bubble.setAttribute(
+    "aria-label",
+    `${values.length} value${values.length === 1 ? "" : "s"} where ${getActiveUser().name} chose ${valueGroupLabels[activeGroup]} and ${getComparedUserName()} chose ${valueGroupLabels[comparedGroup]}: ${values.map((value) => value.name).join(", ")}`,
+  );
+
+  const tooltip = document.createElement("div");
+  tooltip.className = "matrix-tooltip";
+  tooltip.setAttribute("role", "tooltip");
+
+  const tooltipTitle = document.createElement("strong");
+  tooltipTitle.textContent = `${values.length} value${values.length === 1 ? "" : "s"}`;
+
+  const list = document.createElement("ul");
   values.forEach((value) => {
-    cell.append(createComparisonCard(value));
+    const item = document.createElement("li");
+    item.textContent = value.name;
+    list.append(item);
   });
 
+  tooltip.append(tooltipTitle, list);
+  bubble.append(tooltip);
+  cell.append(bubble);
+
   return cell;
+}
+
+function getMatrixBubbleSize(count, maxCount) {
+  const minSize = 42;
+  const maxSize = 88;
+  const ratio = maxCount ? count / maxCount : 0;
+  return Math.round(minSize + ratio * (maxSize - minSize));
 }
 
 function buildValueComparison(activeUser, comparedUser) {

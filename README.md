@@ -63,7 +63,7 @@ Comparison rules:
 Comparison views:
 
 - `Three columns`: groups cards into Very Different, Slightly Different, and Same columns. Each column shows a count.
-- `3x3 matrix`: rows represent the selected user's value choice, columns represent the compared user's value choice, and each cell shows a count plus the matching cards.
+- `3x3 matrix`: rows represent the selected user's value choice and columns represent the compared user's value choice. Each cell is the same size and shows a proportional circle with the count inside; hover over a circle to see the values in that cell.
 
 ## Run Locally
 

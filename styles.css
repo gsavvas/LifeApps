@@ -414,6 +414,7 @@ main {
 
 .comparison-matrix {
   overflow-x: auto;
+  padding-top: 4rem;
 }
 
 .matrix-grid {
@@ -449,14 +450,69 @@ main {
 
 .matrix-cell {
   background: var(--surface-muted);
-  display: grid;
-  gap: 0.65rem;
-  min-height: 6rem;
+  align-items: center;
+  display: flex;
+  height: 10rem;
+  justify-content: center;
+  position: relative;
 }
 
-.matrix-cell > .count-badge {
-  justify-self: start;
-  margin-left: 0;
+.matrix-bubble {
+  align-items: center;
+  background: var(--accent);
+  border-radius: 50%;
+  color: #ffffff;
+  cursor: help;
+  display: inline-flex;
+  font-size: 1.25rem;
+  font-weight: 900;
+  height: var(--bubble-size);
+  justify-content: center;
+  position: relative;
+  width: var(--bubble-size);
+}
+
+.matrix-bubble:focus-visible {
+  outline: 3px solid rgba(182, 106, 60, 0.35);
+  outline-offset: 3px;
+}
+
+.matrix-tooltip {
+  background: var(--text);
+  border-radius: 0.85rem;
+  bottom: calc(100% + 0.75rem);
+  box-shadow: var(--shadow);
+  color: #ffffff;
+  left: 50%;
+  max-height: 14rem;
+  min-width: 13rem;
+  opacity: 0;
+  overflow: auto;
+  padding: 0.85rem;
+  pointer-events: none;
+  position: absolute;
+  text-align: left;
+  transform: translateX(-50%) translateY(0.25rem);
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease,
+    visibility 140ms ease;
+  visibility: hidden;
+  z-index: 10;
+}
+
+.matrix-tooltip ul {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0.5rem 0 0;
+  padding-left: 1rem;
+}
+
+.matrix-bubble:hover .matrix-tooltip,
+.matrix-bubble:focus-visible .matrix-tooltip {
+  opacity: 1;
+  transform: translateX(-50%);
+  visibility: visible;
 }
 
 .item-list,
