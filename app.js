@@ -123,6 +123,11 @@ const comparisonCounts = {
   slightlyDifferent: document.querySelector("#slightly-different-count"),
   same: document.querySelector("#same-count"),
 };
+const comparisonTotals = {
+  veryDifferent: document.querySelector("#very-different-total"),
+  slightlyDifferent: document.querySelector("#slightly-different-total"),
+  same: document.querySelector("#same-total"),
+};
 const comparisonContainers = {
   veryDifferent: document.querySelector("#very-different-values"),
   slightlyDifferent: document.querySelector("#slightly-different-values"),
@@ -671,6 +676,7 @@ function renderValues() {
 }
 
 function renderComparison() {
+  hideMatrixTooltip();
   Object.values(comparisonContainers).forEach((container) => {
     container.innerHTML = "";
   });
@@ -708,6 +714,9 @@ function updateComparisonCounts(comparison) {
   comparisonCounts.veryDifferent.textContent = comparison.veryDifferent.length;
   comparisonCounts.slightlyDifferent.textContent = comparison.slightlyDifferent.length;
   comparisonCounts.same.textContent = comparison.same.length;
+  comparisonTotals.veryDifferent.textContent = comparison.veryDifferent.length;
+  comparisonTotals.slightlyDifferent.textContent = comparison.slightlyDifferent.length;
+  comparisonTotals.same.textContent = comparison.same.length;
 }
 
 function updateComparisonViewMode() {
@@ -736,6 +745,7 @@ function renderComparisonMatrix(values, activeUser, comparedUser) {
     header.textContent = valueGroupLabels[group];
     matrixGrid.append(header);
   });
+  matrixGrid.append(createMatrixTotalCell("Row Total"));
 
   comparisonGroupOrder.forEach((activeGroup) => {
     const rowHeader = document.createElement("div");
@@ -747,7 +757,18 @@ function renderComparisonMatrix(values, activeUser, comparedUser) {
       const cellValues = matrix[activeGroup][comparedGroup];
       matrixGrid.append(createMatrixCell(cellValues, activeGroup, comparedGroup, matrix.maxCount));
     });
+    matrixGrid.append(createMatrixTotalCell(matrix.rowTotals[activeGroup]));
   });
+
+  const totalHeader = document.createElement("div");
+  totalHeader.className = "matrix-header matrix-total-header";
+  totalHeader.textContent = "Column Total";
+  matrixGrid.append(totalHeader);
+
+  comparisonGroupOrder.forEach((comparedGroup) => {
+    matrixGrid.append(createMatrixTotalCell(matrix.columnTotals[comparedGroup]));
+  });
+  matrixGrid.append(createMatrixTotalCell(matrix.grandTotal, true));
 
   comparisonMatrixView.append(matrixGrid);
 }
@@ -764,13 +785,32 @@ function buildComparisonMatrix(values) {
     matrix[value.activeGroup][value.comparedGroup].push(value);
   });
   matrix.maxCount = Math.max(0, ...values.map((value) => matrix[value.activeGroup][value.comparedGroup].length));
+  matrix.rowTotals = Object.fromEntries(
+    comparisonGroupOrder.map((activeGroup) => [
+      activeGroup,
+      comparisonGroupOrder.reduce(
+        (total, comparedGroup) => total + matrix[activeGroup][comparedGroup].length,
+        0,
+      ),
+    ]),
+  );
+  matrix.columnTotals = Object.fromEntries(
+    comparisonGroupOrder.map((comparedGroup) => [
+      comparedGroup,
+      comparisonGroupOrder.reduce(
+        (total, activeGroup) => total + matrix[activeGroup][comparedGroup].length,
+        0,
+      ),
+    ]),
+  );
+  matrix.grandTotal = values.length;
 
   return matrix;
 }
 
 function createMatrixCell(values, activeGroup, comparedGroup, maxCount) {
   const cell = document.createElement("div");
-  cell.className = "matrix-cell";
+  cell.className = `matrix-cell ${getMatrixDifferenceClass(activeGroup, comparedGroup)}`;
 
   if (!values.length) {
     return cell;
@@ -785,13 +825,21 @@ function createMatrixCell(values, activeGroup, comparedGroup, maxCount) {
     "aria-label",
     `${values.length} value${values.length === 1 ? "" : "s"} where ${getActiveUser().name} chose ${valueGroupLabels[activeGroup]} and ${getComparedUserName()} chose ${valueGroupLabels[comparedGroup]}: ${values.map((value) => value.name).join(", ")}`,
   );
+  bubble.addEventListener("mouseenter", () => showMatrixTooltip(bubble, values));
+  bubble.addEventListener("focus", () => showMatrixTooltip(bubble, values));
+  bubble.addEventListener("mouseleave", hideMatrixTooltip);
+  bubble.addEventListener("blur", hideMatrixTooltip);
+  cell.append(bubble);
 
-  const tooltip = document.createElement("div");
-  tooltip.className = "matrix-tooltip";
-  tooltip.setAttribute("role", "tooltip");
+  return cell;
+}
 
-  const tooltipTitle = document.createElement("strong");
-  tooltipTitle.textContent = `${values.length} value${values.length === 1 ? "" : "s"}`;
+function showMatrixTooltip(anchor, values) {
+  const tooltip = getMatrixTooltip();
+  tooltip.innerHTML = "";
+
+  const title = document.createElement("strong");
+  title.textContent = `${values.length} value${values.length === 1 ? "" : "s"}`;
 
   const list = document.createElement("ul");
   values.forEach((value) => {
@@ -800,11 +848,59 @@ function createMatrixCell(values, activeGroup, comparedGroup, maxCount) {
     list.append(item);
   });
 
-  tooltip.append(tooltipTitle, list);
-  bubble.append(tooltip);
-  cell.append(bubble);
+  tooltip.append(title, list);
+  tooltip.hidden = false;
 
+  const anchorRect = anchor.getBoundingClientRect();
+  const tooltipRect = tooltip.getBoundingClientRect();
+  const pageMargin = 16;
+  const anchorCenter = window.scrollX + anchorRect.left + anchorRect.width / 2;
+  const minLeft = window.scrollX + pageMargin;
+  const maxLeft = window.scrollX + window.innerWidth - tooltipRect.width - pageMargin;
+
+  tooltip.style.left = `${clampNumber(anchorCenter - tooltipRect.width / 2, minLeft, maxLeft)}px`;
+  tooltip.style.top = `${window.scrollY + anchorRect.bottom + 12}px`;
+}
+
+function hideMatrixTooltip() {
+  getMatrixTooltip().hidden = true;
+}
+
+function getMatrixTooltip() {
+  let tooltip = document.querySelector("#matrix-floating-tooltip");
+  if (!tooltip) {
+    tooltip = document.createElement("div");
+    tooltip.id = "matrix-floating-tooltip";
+    tooltip.className = "matrix-floating-tooltip";
+    tooltip.setAttribute("role", "tooltip");
+    tooltip.hidden = true;
+    document.body.append(tooltip);
+  }
+
+  return tooltip;
+}
+
+function createMatrixTotalCell(value, isGrandTotal = false) {
+  const cell = document.createElement("div");
+  cell.className = `matrix-total-cell${isGrandTotal ? " grand-total" : ""}`;
+  cell.textContent = value;
   return cell;
+}
+
+function getMatrixDifferenceClass(activeGroup, comparedGroup) {
+  const difference = Math.abs(
+    comparisonGroupOrder.indexOf(activeGroup) - comparisonGroupOrder.indexOf(comparedGroup),
+  );
+
+  if (difference === 0) {
+    return "matrix-match";
+  }
+
+  if (difference === 1) {
+    return "matrix-near";
+  }
+
+  return "matrix-opposite";
 }
 
 function getMatrixBubbleSize(count, maxCount) {
