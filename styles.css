@@ -326,7 +326,7 @@ main {
 
 .share-panel {
   align-items: end;
-  grid-template-columns: minmax(220px, 1fr) auto;
+  grid-template-columns: minmax(220px, 1fr) auto auto;
   margin-top: 1rem;
 }
 
@@ -743,5 +743,109 @@ main {
   .user-form,
   .add-form {
     grid-template-columns: 1fr;
+  }
+}
+
+@media print {
+  body {
+    background: #ffffff;
+    color: #111111;
+  }
+
+  .site-header,
+  #bucketlister,
+  #value-aligner > :not(.value-layout),
+  .value-bank,
+  .value-actions {
+    display: none !important;
+  }
+
+  main {
+    max-width: none;
+    padding: 0;
+  }
+
+  #value-aligner,
+  .value-layout,
+  .value-columns {
+    display: block !important;
+  }
+
+  .value-layout {
+    margin-top: 0;
+  }
+
+  .value-columns {
+    display: flex !important;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .value-column[data-value-group="mostImportant"] {
+    order: 1;
+  }
+
+  .value-column[data-value-group="veryImportant"] {
+    order: 2;
+  }
+
+  .value-column[data-value-group="important"] {
+    order: 3;
+  }
+
+  .value-column[data-value-group="notImportant"] {
+    order: 4;
+  }
+
+  .value-column {
+    background: #ffffff;
+    border: 1px solid #999999;
+    box-shadow: none;
+    padding: 0.6rem;
+  }
+
+  .value-column h3 {
+    font-size: 0.95rem;
+  }
+
+  .value-column h3 {
+    font-size: 0;
+  }
+
+  .value-column h3::before {
+    color: #111111;
+    font-size: 1rem;
+  }
+
+  .value-column h3 .count-badge {
+    display: none;
+  }
+
+  .value-column[data-value-group="mostImportant"] h3::before {
+    content: "Most Important";
+  }
+
+  .value-column[data-value-group="veryImportant"] h3::before {
+    content: "Very Important";
+  }
+
+  .value-column[data-value-group="important"] h3::before {
+    content: "Important";
+  }
+
+  .value-column[data-value-group="notImportant"] h3::before {
+    content: "Not Important";
+  }
+
+  .value-card {
+    border: 1px solid #cccccc;
+    box-shadow: none;
+    break-inside: avoid;
+    cursor: default;
+    padding: 0.55rem;
+  }
+
+  .value-column .value-card-list {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   }
 }

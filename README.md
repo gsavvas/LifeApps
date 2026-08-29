@@ -35,6 +35,7 @@ Features:
 - Lets users drag values between groups.
 - Shows quick-placement buttons on unsorted values for moving them into a sorted column.
 - Lets users remove values.
+- Prints a clean four-column view of sorted results without tile actions.
 - Generates a share link that encodes the selected user's value sort.
 - Imports shared value-sort links as local users available for comparison.
 - Resets Value Aligner data for the selected user.

@@ -122,6 +122,7 @@ const bucketGrid = document.querySelector("#bucket-grid");
 const resetBucketlisterButton = document.querySelector("#reset-bucketlister");
 
 const resetValuesButton = document.querySelector("#reset-values");
+const printResultsButton = document.querySelector("#print-results");
 const shareResultsButton = document.querySelector("#share-results");
 const shareLinkInput = document.querySelector("#share-link");
 const shareStatus = document.querySelector("#share-status");
@@ -633,6 +634,7 @@ function getBuckets() {
 }
 
 function bindValueAligner() {
+  printResultsButton.addEventListener("click", () => window.print());
   shareResultsButton.addEventListener("click", handleShareResults);
 
   Object.values(valueContainers).forEach((container) => {
