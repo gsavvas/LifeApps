@@ -120,16 +120,19 @@ const comparisonColumnsView = document.querySelector("#comparison-columns-view")
 const comparisonMatrixView = document.querySelector("#comparison-matrix-view");
 const comparisonCounts = {
   veryDifferent: document.querySelector("#very-different-count"),
+  quiteDifferent: document.querySelector("#quite-different-count"),
   slightlyDifferent: document.querySelector("#slightly-different-count"),
   same: document.querySelector("#same-count"),
 };
 const comparisonTotals = {
   veryDifferent: document.querySelector("#very-different-total"),
+  quiteDifferent: document.querySelector("#quite-different-total"),
   slightlyDifferent: document.querySelector("#slightly-different-total"),
   same: document.querySelector("#same-total"),
 };
 const comparisonContainers = {
   veryDifferent: document.querySelector("#very-different-values"),
+  quiteDifferent: document.querySelector("#quite-different-values"),
   slightlyDifferent: document.querySelector("#slightly-different-values"),
   same: document.querySelector("#same-values"),
 };
@@ -138,6 +141,14 @@ const valueContainers = {
   notImportant: document.querySelector("#not-important-values"),
   important: document.querySelector("#important-values"),
   veryImportant: document.querySelector("#very-important-values"),
+  mostImportant: document.querySelector("#most-important-values"),
+};
+const valueCounts = {
+  unsorted: document.querySelector("#unsorted-count"),
+  notImportant: document.querySelector("#not-important-count"),
+  important: document.querySelector("#important-count"),
+  veryImportant: document.querySelector("#very-important-count"),
+  mostImportant: document.querySelector("#most-important-count"),
 };
 
 const valueGroupLabels = {
@@ -145,8 +156,9 @@ const valueGroupLabels = {
   notImportant: "Not Important To Me",
   important: "Important To Me",
   veryImportant: "Very Important To Me",
+  mostImportant: "Most Important To Me",
 };
-const comparisonGroupOrder = ["notImportant", "important", "veryImportant"];
+const comparisonGroupOrder = ["notImportant", "important", "veryImportant", "mostImportant"];
 
 let comparedUserId = "";
 let comparisonViewMode = "columns";
@@ -661,6 +673,7 @@ function renderValues() {
   Object.entries(valueContainers).forEach(([group, container]) => {
     container.innerHTML = "";
     const values = state.valueAligner.values.filter((value) => value.group === group);
+    valueCounts[group].textContent = values.length;
 
     if (!values.length) {
       container.append(createEmptyState(group === "unsorted" ? "All values are sorted." : "No values here yet."));
@@ -699,12 +712,16 @@ function renderComparison() {
   comparisonResults.hidden = false;
   const comparison = buildValueComparison(activeUser, comparedUser);
   const comparedCount =
-    comparison.veryDifferent.length + comparison.slightlyDifferent.length + comparison.same.length;
+    comparison.veryDifferent.length +
+    comparison.quiteDifferent.length +
+    comparison.slightlyDifferent.length +
+    comparison.same.length;
 
   comparisonSummary.textContent = `${activeUser.name} and ${comparedUser.name} have ${comparedCount} shared sorted value${comparedCount === 1 ? "" : "s"} to compare.`;
   updateComparisonCounts(comparison);
   updateComparisonViewMode();
   renderComparisonList(comparisonContainers.veryDifferent, comparison.veryDifferent);
+  renderComparisonList(comparisonContainers.quiteDifferent, comparison.quiteDifferent);
   renderComparisonList(comparisonContainers.slightlyDifferent, comparison.slightlyDifferent);
   renderComparisonList(comparisonContainers.same, comparison.same);
   renderComparisonMatrix(comparison.items, activeUser, comparedUser);
@@ -712,9 +729,11 @@ function renderComparison() {
 
 function updateComparisonCounts(comparison) {
   comparisonCounts.veryDifferent.textContent = comparison.veryDifferent.length;
+  comparisonCounts.quiteDifferent.textContent = comparison.quiteDifferent.length;
   comparisonCounts.slightlyDifferent.textContent = comparison.slightlyDifferent.length;
   comparisonCounts.same.textContent = comparison.same.length;
   comparisonTotals.veryDifferent.textContent = comparison.veryDifferent.length;
+  comparisonTotals.quiteDifferent.textContent = comparison.quiteDifferent.length;
   comparisonTotals.slightlyDifferent.textContent = comparison.slightlyDifferent.length;
   comparisonTotals.same.textContent = comparison.same.length;
 }
@@ -941,6 +960,7 @@ function buildValueComparison(activeUser, comparedUser) {
   );
   const comparison = {
     veryDifferent: [],
+    quiteDifferent: [],
     slightlyDifferent: [],
     same: [],
     items: [],
@@ -965,8 +985,14 @@ function buildValueComparison(activeUser, comparedUser) {
       return;
     }
 
-    if (isVeryDifferent(activeValue.group, comparedValue.group)) {
+    const difference = getImportanceDifference(activeValue.group, comparedValue.group);
+    if (difference === 3) {
       comparison.veryDifferent.push(result);
+      return;
+    }
+
+    if (difference === 2) {
+      comparison.quiteDifferent.push(result);
       return;
     }
 
@@ -984,11 +1010,8 @@ function getSortedValueMap(values) {
   );
 }
 
-function isVeryDifferent(firstGroup, secondGroup) {
-  return (
-    (firstGroup === "veryImportant" && secondGroup === "notImportant") ||
-    (firstGroup === "notImportant" && secondGroup === "veryImportant")
-  );
+function getImportanceDifference(firstGroup, secondGroup) {
+  return Math.abs(comparisonGroupOrder.indexOf(firstGroup) - comparisonGroupOrder.indexOf(secondGroup));
 }
 
 function renderComparisonList(container, values) {

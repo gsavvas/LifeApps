@@ -138,23 +138,29 @@
               <legend>Comparison view</legend>
               <label>
                 <input type="radio" name="comparison-view" value="columns" checked />
-                Three columns
+                Four columns
               </label>
               <label>
                 <input type="radio" name="comparison-view" value="matrix" />
-                3x3 matrix
+                4x4 matrix
               </label>
             </fieldset>
             <div class="comparison-columns" id="comparison-columns-view">
               <div class="comparison-column">
                 <h3>Very Different <span class="count-badge" id="very-different-count">0</span></h3>
-                <p>One user chose very important and the other chose not important.</p>
+                <p>The two users' choices are separated by three levels.</p>
                 <div class="comparison-list" id="very-different-values"></div>
                 <p class="comparison-total">Total: <span id="very-different-total">0</span></p>
               </div>
               <div class="comparison-column">
+                <h3>Quite Different <span class="count-badge" id="quite-different-count">0</span></h3>
+                <p>The two users' choices are separated by two levels.</p>
+                <div class="comparison-list" id="quite-different-values"></div>
+                <p class="comparison-total">Total: <span id="quite-different-total">0</span></p>
+              </div>
+              <div class="comparison-column">
                 <h3>Slightly Different <span class="count-badge" id="slightly-different-count">0</span></h3>
-                <p>One user chose important, and the other chose very important or not important.</p>
+                <p>The two users' choices are separated by one level.</p>
                 <div class="comparison-list" id="slightly-different-values"></div>
                 <p class="comparison-total">Total: <span id="slightly-different-total">0</span></p>
               </div>
@@ -171,22 +177,26 @@
 
         <div class="value-layout">
           <aside class="panel value-bank">
-            <h3>Unsorted Values</h3>
+            <h3>Unsorted Values <span class="count-badge" id="unsorted-count">0</span></h3>
             <div class="value-card-list" id="value-bank"></div>
           </aside>
 
           <div class="value-columns" aria-live="polite">
             <div class="value-column" data-value-group="notImportant">
-              <h3>Not Important To Me</h3>
+              <h3>Not Important To Me <span class="count-badge" id="not-important-count">0</span></h3>
               <div class="value-card-list" id="not-important-values"></div>
             </div>
             <div class="value-column" data-value-group="important">
-              <h3>Important To Me</h3>
+              <h3>Important To Me <span class="count-badge" id="important-count">0</span></h3>
               <div class="value-card-list" id="important-values"></div>
             </div>
             <div class="value-column accent" data-value-group="veryImportant">
-              <h3>Very Important To Me</h3>
+              <h3>Very Important To Me <span class="count-badge" id="very-important-count">0</span></h3>
               <div class="value-card-list" id="very-important-values"></div>
+            </div>
+            <div class="value-column accent-strong" data-value-group="mostImportant">
+              <h3>Most Important To Me <span class="count-badge" id="most-important-count">0</span></h3>
+              <div class="value-card-list" id="most-important-values"></div>
             </div>
           </div>
         </div>

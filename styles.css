@@ -381,7 +381,7 @@ main {
 }
 
 .comparison-columns {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .comparison-column,
@@ -425,8 +425,8 @@ main {
 .matrix-grid {
   display: grid;
   gap: 0.75rem;
-  grid-template-columns: minmax(5.5rem, 0.4fr) minmax(7rem, 0.55fr) repeat(3, minmax(7.5rem, 1fr)) minmax(5.5rem, 0.4fr);
-  min-width: 900px;
+  grid-template-columns: minmax(5rem, 0.35fr) minmax(6.5rem, 0.5fr) repeat(4, minmax(6.75rem, 1fr)) minmax(5rem, 0.35fr);
+  min-width: 960px;
 }
 
 .matrix-axis-label,
@@ -453,12 +453,12 @@ main {
 }
 
 .matrix-column-user-label {
-  grid-column: span 3;
+  grid-column: span 4;
 }
 
 .matrix-row-user-label {
   background: var(--accent-soft);
-  grid-row: span 3;
+  grid-row: span 4;
 }
 
 .matrix-totals-label {
@@ -623,7 +623,7 @@ main {
 }
 
 .value-layout {
-  grid-template-columns: minmax(240px, 0.65fr) minmax(0, 1.8fr);
+  grid-template-columns: 1fr;
   margin-top: 1rem;
 }
 
@@ -631,8 +631,12 @@ main {
   align-self: start;
 }
 
+.value-bank .value-card-list {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
 .value-columns {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
 .value-column {
@@ -643,6 +647,11 @@ main {
 .value-column.accent {
   background: var(--accent-soft);
   border-color: rgba(182, 106, 60, 0.28);
+}
+
+.value-column.accent-strong {
+  background: #efd0bc;
+  border-color: rgba(182, 106, 60, 0.38);
 }
 
 .value-column .value-card-list,

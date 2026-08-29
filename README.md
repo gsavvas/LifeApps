@@ -30,7 +30,8 @@ Features:
   - Not Important To Me
   - Important To Me
   - Very Important To Me
-- Keeps unsorted values in a separate value bank.
+  - Most Important To Me
+- Keeps unsorted values in a full-width value bank above the sorted columns.
 - Lets users add custom values.
 - Lets users move values between groups.
 - Lets users remove values.
@@ -56,14 +57,15 @@ Value Aligner can compare the selected user's sorted values with another local u
 Comparison rules:
 
 - Values left unsorted by either user are excluded.
-- `Very Different`: one user chose `Very Important To Me` and the other chose `Not Important To Me`.
-- `Slightly Different`: one user chose `Important To Me` and the other chose either `Very Important To Me` or `Not Important To Me`.
+- `Very Different`: the two users' choices are separated by three levels.
+- `Quite Different`: the two users' choices are separated by two levels.
+- `Slightly Different`: the two users' choices are separated by one level.
 - `Same`: both users chose the same importance level.
 
 Comparison views:
 
-- `Three columns`: groups cards into Very Different, Slightly Different, and Same columns. Each column shows a count and total.
-- `3x3 matrix`: rows represent the selected user's value choice and columns represent the compared user's value choice, with color-coded user labels. The compared user's label spans the three response columns, and the selected user's label sits in its own left-side column spanning the three response rows. Each cell is the same size and shows a proportional circle with the count inside; hover over a circle to see the values in that cell in a large floating tooltip. Matching cells are dark gray, one-level differences are light gray, and opposite answers are white. The matrix also includes row totals, column totals, and a grand total.
+- `Four columns`: groups cards into Very Different, Quite Different, Slightly Different, and Same columns. Each column shows a count and total.
+- `4x4 matrix`: rows represent the selected user's value choice and columns represent the compared user's value choice, with color-coded user labels. The compared user's label spans the four response columns, and the selected user's label sits in its own left-side column spanning the four response rows. Each cell is the same size and shows a proportional circle with the count inside; hover over a circle to see the values in that cell in a large floating tooltip. Matching cells are dark gray, one-level differences are light gray, and larger differences are white. The matrix also includes row totals, column totals, and a grand total.
 
 ## Run Locally
 
