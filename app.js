@@ -1,5 +1,17 @@
 const STORAGE_KEY = "lifeapps-state-v1";
 const VALUE_SET_VERSION = "act-value-sort-2001-descriptions";
+const SHARE_PARAM = "sharedValues";
+const SHARE_TYPE = "lifeapps-value-sort";
+const SHARE_GROUP_CODES = {
+  unsorted: "u",
+  notImportant: "n",
+  important: "i",
+  veryImportant: "v",
+  mostImportant: "m",
+};
+const SHARE_CODE_GROUPS = Object.fromEntries(
+  Object.entries(SHARE_GROUP_CODES).map(([group, code]) => [code, group]),
+);
 
 const defaultValues = [
   { name: "Acceptance", description: "to be accepted as I am" },
@@ -110,6 +122,9 @@ const bucketGrid = document.querySelector("#bucket-grid");
 const resetBucketlisterButton = document.querySelector("#reset-bucketlister");
 
 const resetValuesButton = document.querySelector("#reset-values");
+const shareResultsButton = document.querySelector("#share-results");
+const shareLinkInput = document.querySelector("#share-link");
+const shareStatus = document.querySelector("#share-status");
 const compareUserSelect = document.querySelector("#compare-user-select");
 const comparisonResults = document.querySelector("#comparison-results");
 const comparisonSummary = document.querySelector("#comparison-summary");
@@ -165,6 +180,11 @@ let draggedValueId = "";
 init();
 
 function init() {
+  const importedUser = importSharedValueSortFromUrl();
+  if (importedUser) {
+    comparedUserId = importedUser.id;
+  }
+
   bindUserSwitcher();
   bindNavigation();
   bindBucketlister();
@@ -174,6 +194,10 @@ function init() {
   syncInputsFromState();
   render();
   showSection(getInitialSection());
+
+  if (importedUser && shareStatus) {
+    shareStatus.textContent = `Imported ${importedUser.name}'s value sort. You can compare against it now.`;
+  }
 }
 
 function loadState() {
@@ -609,6 +633,8 @@ function getBuckets() {
 }
 
 function bindValueAligner() {
+  shareResultsButton.addEventListener("click", handleShareResults);
+
   Object.values(valueContainers).forEach((container) => {
     container.addEventListener("click", handleValueClick);
     container.addEventListener("dragstart", handleValueDragStart);
@@ -638,6 +664,163 @@ function bindValueAligner() {
     renderValues();
     renderComparison();
   });
+}
+
+async function handleShareResults() {
+  if (!ensureShareableUserName()) {
+    return;
+  }
+
+  const shareLink = createShareLink();
+  shareLinkInput.value = shareLink;
+  shareLinkInput.focus();
+  shareLinkInput.select();
+
+  try {
+    await navigator.clipboard?.writeText(shareLink);
+    shareStatus.textContent = "Share link generated and copied to your clipboard.";
+  } catch {
+    shareStatus.textContent = "Share link generated. Copy it from the field above.";
+  }
+}
+
+function ensureShareableUserName() {
+  const activeUser = getActiveUser();
+  if (activeUser.name.trim().toLowerCase() !== "guest") {
+    return true;
+  }
+
+  const newName = prompt("Please enter your name before sharing results.", "");
+  const trimmedName = newName?.trim();
+  if (!trimmedName) {
+    shareStatus.textContent = "Please choose a name before sharing results.";
+    return false;
+  }
+
+  activeUser.name = trimmedName;
+  saveState();
+  renderUserSwitcher();
+  return true;
+}
+
+function createShareLink() {
+  const url = new URL(window.location.href);
+  url.search = "";
+  url.searchParams.set(SHARE_PARAM, encodeSharePayload(createSharePayload()));
+  url.hash = "value-aligner";
+  return url.toString();
+}
+
+function createSharePayload() {
+  const activeUser = getActiveUser();
+
+  return {
+    type: SHARE_TYPE,
+    version: 1,
+    valueSetVersion: VALUE_SET_VERSION,
+    name: activeUser.name,
+    values: state.valueAligner.values.map((value) => ({
+      n: value.name,
+      g: SHARE_GROUP_CODES[value.group] ?? SHARE_GROUP_CODES.unsorted,
+    })),
+  };
+}
+
+function importSharedValueSortFromUrl() {
+  const url = new URL(window.location.href);
+  const encodedPayload = url.searchParams.get(SHARE_PARAM);
+  if (!encodedPayload) {
+    return null;
+  }
+
+  try {
+    const payload = JSON.parse(decodeSharePayload(encodedPayload));
+    if (payload?.type !== SHARE_TYPE || !Array.isArray(payload.values)) {
+      throw new Error("Invalid share payload");
+    }
+
+    const importedUser = createUser(getUniqueUserName(payload.name || "Shared User"), {
+      ...createDefaultUserData(),
+      valueAligner: {
+        valueSetVersion: VALUE_SET_VERSION,
+        values: createDefaultValueRecords(normalizeSharedValues(payload.values)),
+      },
+    });
+
+    appState.users.push(importedUser);
+    saveState();
+    removeShareParamFromUrl(url);
+    return importedUser;
+  } catch {
+    removeShareParamFromUrl(url);
+    return null;
+  }
+}
+
+function normalizeSharedValues(values) {
+  const validGroups = new Set(Object.keys(valueGroupLabels));
+
+  return values
+    .map((value) => {
+      const name = typeof value?.n === "string" ? value.n : value?.name;
+      const group = SHARE_CODE_GROUPS[value?.g] ?? value?.group;
+
+      return {
+        id: createId(),
+        name: typeof name === "string" ? name.trim() : "",
+        description: typeof value?.description === "string" ? value.description : "",
+        group: validGroups.has(group) ? group : "unsorted",
+      };
+    })
+    .filter((value) => value.name)
+    .map((value) => ({
+      id: createId(),
+      name: value.name,
+      description: value.description,
+      group: value.group,
+    }));
+}
+
+function getUniqueUserName(name) {
+  const baseName = String(name).trim() || "Shared User";
+  const existingNames = new Set(appState.users.map((user) => user.name));
+  if (!existingNames.has(baseName)) {
+    return baseName;
+  }
+
+  let suffix = 2;
+  while (existingNames.has(`${baseName} ${suffix}`)) {
+    suffix += 1;
+  }
+
+  return `${baseName} ${suffix}`;
+}
+
+function removeShareParamFromUrl(url) {
+  url.searchParams.delete(SHARE_PARAM);
+  const nextUrl = `${url.pathname}${url.search}#value-aligner`;
+  window.history.replaceState(null, "", nextUrl);
+}
+
+function encodeSharePayload(payload) {
+  const bytes = new TextEncoder().encode(JSON.stringify(payload));
+  let binary = "";
+  bytes.forEach((byte) => {
+    binary += String.fromCharCode(byte);
+  });
+
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+function decodeSharePayload(encodedPayload) {
+  let base64 = encodedPayload.replace(/-/g, "+").replace(/_/g, "/");
+  while (base64.length % 4) {
+    base64 += "=";
+  }
+
+  const binary = atob(base64);
+  const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
 }
 
 function handleValueClick(event) {

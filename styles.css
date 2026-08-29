@@ -287,6 +287,7 @@ main {
 .content-grid,
 .add-form,
 .compare-panel,
+.share-panel,
 .comparison-columns,
 .comparison-list,
 .value-layout,
@@ -321,6 +322,21 @@ main {
 
 .compare-panel {
   margin-top: 1rem;
+}
+
+.share-panel {
+  align-items: end;
+  grid-template-columns: minmax(220px, 1fr) auto;
+  margin-top: 1rem;
+}
+
+.share-panel .full-width,
+.share-status {
+  grid-column: 1 / -1;
+}
+
+#share-link {
+  font-size: 0.86rem;
 }
 
 .comparison-results {
@@ -710,6 +726,7 @@ main {
   .content-grid,
   .value-layout,
   .comparison-columns,
+  .share-panel,
   .value-columns {
     grid-template-columns: 1fr;
   }
