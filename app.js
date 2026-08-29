@@ -109,8 +109,6 @@ const bucketItemList = document.querySelector("#bucket-item-list");
 const bucketGrid = document.querySelector("#bucket-grid");
 const resetBucketlisterButton = document.querySelector("#reset-bucketlister");
 
-const customValueForm = document.querySelector("#custom-value-form");
-const customValueInput = document.querySelector("#custom-value-input");
 const resetValuesButton = document.querySelector("#reset-values");
 const compareUserSelect = document.querySelector("#compare-user-select");
 const comparisonResults = document.querySelector("#comparison-results");
@@ -333,7 +331,9 @@ function renderUserSwitcher() {
   });
 
   userSelect.value = activeUser.id;
-  currentUserName.textContent = activeUser.name;
+  if (currentUserName) {
+    currentUserName.textContent = activeUser.name;
+  }
   renderCompareUserOptions();
 }
 
@@ -609,26 +609,6 @@ function getBuckets() {
 }
 
 function bindValueAligner() {
-  customValueForm.addEventListener("submit", (event) => {
-    event.preventDefault();
-
-    const name = customValueInput.value.trim();
-    if (!name) {
-      return;
-    }
-
-    state.valueAligner.values.push({
-      id: createId(),
-      name,
-      description: "",
-      group: "unsorted",
-    });
-    customValueInput.value = "";
-    saveState();
-    renderValues();
-    renderComparison();
-  });
-
   Object.values(valueContainers).forEach((container) => {
     container.addEventListener("click", handleValueClick);
     container.addEventListener("dragstart", handleValueDragStart);
@@ -661,7 +641,16 @@ function bindValueAligner() {
 }
 
 function handleValueClick(event) {
+  const moveButton = event.target.closest("[data-move-value]");
   const deleteButton = event.target.closest("[data-delete-value]");
+
+  if (moveButton) {
+    state.valueAligner.values = state.valueAligner.values.map((value) =>
+      value.id === moveButton.dataset.valueId
+        ? { ...value, group: moveButton.dataset.moveValue }
+        : value,
+    );
+  }
 
   if (deleteButton) {
     state.valueAligner.values = state.valueAligner.values.filter(
@@ -669,7 +658,7 @@ function handleValueClick(event) {
     );
   }
 
-  if (deleteButton) {
+  if (moveButton || deleteButton) {
     saveState();
     renderValues();
     renderComparison();
@@ -1112,6 +1101,18 @@ function createValueCard(value) {
 
   const actions = document.createElement("div");
   actions.className = "value-actions";
+
+  if (value.group === "unsorted") {
+    comparisonGroupOrder.forEach((group) => {
+      const button = document.createElement("button");
+      button.className = "small-button";
+      button.type = "button";
+      button.textContent = valueGroupLabels[group];
+      button.dataset.moveValue = group;
+      button.dataset.valueId = value.id;
+      actions.append(button);
+    });
+  }
 
   const deleteButton = document.createElement("button");
   deleteButton.className = "small-button";

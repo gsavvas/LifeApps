@@ -32,8 +32,8 @@ Features:
   - Very Important To Me
   - Most Important To Me
 - Keeps unsorted values in a full-width value bank above the sorted columns.
-- Lets users add custom values.
 - Lets users drag values between groups.
+- Shows quick-placement buttons on unsorted values for moving them into a sorted column.
 - Lets users remove values.
 - Resets Value Aligner data for the selected user.
 
