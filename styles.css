@@ -602,6 +602,24 @@ main {
   padding: 0.9rem;
 }
 
+.value-card {
+  cursor: grab;
+}
+
+.value-card:active {
+  cursor: grabbing;
+}
+
+.value-card.dragging {
+  opacity: 0.55;
+}
+
+.value-bank.drag-over,
+.value-column.drag-over {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgba(182, 106, 60, 0.16);
+}
+
 .item-card strong,
 .value-card strong {
   overflow-wrap: anywhere;

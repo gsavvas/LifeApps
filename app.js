@@ -162,6 +162,7 @@ const comparisonGroupOrder = ["notImportant", "important", "veryImportant", "mos
 
 let comparedUserId = "";
 let comparisonViewMode = "columns";
+let draggedValueId = "";
 
 init();
 
@@ -394,7 +395,7 @@ function bindNavigation() {
 
 function getInitialSection() {
   const sectionId = window.location.hash.replace("#", "");
-  return sectionId === "value-aligner" ? "value-aligner" : "bucketlister";
+  return sectionId === "bucketlister" ? "bucketlister" : "value-aligner";
 }
 
 function showSection(sectionId) {
@@ -630,6 +631,21 @@ function bindValueAligner() {
 
   Object.values(valueContainers).forEach((container) => {
     container.addEventListener("click", handleValueClick);
+    container.addEventListener("dragstart", handleValueDragStart);
+    container.addEventListener("dragend", handleValueDragEnd);
+  });
+
+  Object.entries(valueContainers).forEach(([group, container]) => {
+    const dropZone = container.closest(".value-column, .value-bank");
+
+    dropZone.addEventListener("dragover", handleValueDragOver);
+    dropZone.addEventListener("dragenter", () => dropZone.classList.add("drag-over"));
+    dropZone.addEventListener("dragleave", (event) => {
+      if (!dropZone.contains(event.relatedTarget)) {
+        dropZone.classList.remove("drag-over");
+      }
+    });
+    dropZone.addEventListener("drop", (event) => handleValueDrop(event, group));
   });
 
   resetValuesButton.addEventListener("click", () => {
@@ -645,16 +661,7 @@ function bindValueAligner() {
 }
 
 function handleValueClick(event) {
-  const moveButton = event.target.closest("[data-move-value]");
   const deleteButton = event.target.closest("[data-delete-value]");
-
-  if (moveButton) {
-    state.valueAligner.values = state.valueAligner.values.map((value) =>
-      value.id === moveButton.dataset.valueId
-        ? { ...value, group: moveButton.dataset.moveValue }
-        : value,
-    );
-  }
 
   if (deleteButton) {
     state.valueAligner.values = state.valueAligner.values.filter(
@@ -662,11 +669,51 @@ function handleValueClick(event) {
     );
   }
 
-  if (moveButton || deleteButton) {
+  if (deleteButton) {
     saveState();
     renderValues();
     renderComparison();
   }
+}
+
+function handleValueDragStart(event) {
+  const card = event.target.closest("[data-value-card]");
+  if (!card) {
+    return;
+  }
+
+  draggedValueId = card.dataset.valueCard;
+  card.classList.add("dragging");
+  event.dataTransfer.effectAllowed = "move";
+  event.dataTransfer.setData("text/plain", draggedValueId);
+}
+
+function handleValueDragEnd() {
+  draggedValueId = "";
+  document.querySelectorAll(".dragging, .drag-over").forEach((element) => {
+    element.classList.remove("dragging", "drag-over");
+  });
+}
+
+function handleValueDragOver(event) {
+  event.preventDefault();
+  event.dataTransfer.dropEffect = "move";
+}
+
+function handleValueDrop(event, group) {
+  event.preventDefault();
+  const valueId = event.dataTransfer.getData("text/plain") || draggedValueId;
+  if (!valueId) {
+    return;
+  }
+
+  state.valueAligner.values = state.valueAligner.values.map((value) =>
+    value.id === valueId ? { ...value, group } : value,
+  );
+  saveState();
+  handleValueDragEnd();
+  renderValues();
+  renderComparison();
 }
 
 function renderValues() {
@@ -1052,6 +1099,9 @@ function getComparedUserName() {
 function createValueCard(value) {
   const card = document.createElement("article");
   card.className = "value-card";
+  card.draggable = true;
+  card.dataset.valueCard = value.id;
+  card.setAttribute("aria-label", `${value.name}. Drag to another column to move this value.`);
 
   const title = document.createElement("strong");
   title.textContent = value.name;
@@ -1062,20 +1112,6 @@ function createValueCard(value) {
 
   const actions = document.createElement("div");
   actions.className = "value-actions";
-
-  Object.entries(valueGroupLabels).forEach(([group, label]) => {
-    if (value.group === group) {
-      return;
-    }
-
-    const button = document.createElement("button");
-    button.className = "small-button";
-    button.type = "button";
-    button.textContent = label;
-    button.dataset.moveValue = group;
-    button.dataset.valueId = value.id;
-    actions.append(button);
-  });
 
   const deleteButton = document.createElement("button");
   deleteButton.className = "small-button";
