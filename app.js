@@ -177,6 +177,7 @@ const comparisonGroupOrder = ["notImportant", "important", "veryImportant", "mos
 
 let comparedUserId = "";
 let comparisonViewMode = "columns";
+let draggedBucketItemId = "";
 let draggedValueId = "";
 
 init();
@@ -462,7 +463,24 @@ function bindBucketlister() {
   });
 
   bucketItemList.addEventListener("click", handleBucketItemClick);
-  bucketItemList.addEventListener("change", handleBucketItemChange);
+  bucketItemList.addEventListener("dragstart", handleBucketItemDragStart);
+  bucketItemList.addEventListener("dragend", handleBucketItemDragEnd);
+  bucketItemList.addEventListener("dragover", handleBucketItemDragOver);
+  bucketItemList.addEventListener("dragenter", () => bucketItemList.classList.add("drag-over"));
+  bucketItemList.addEventListener("dragleave", (event) => {
+    if (!bucketItemList.contains(event.relatedTarget)) {
+      bucketItemList.classList.remove("drag-over");
+    }
+  });
+  bucketItemList.addEventListener("drop", (event) => handleBucketItemDrop(event, "unassigned"));
+
+  bucketGrid.addEventListener("click", handleBucketItemClick);
+  bucketGrid.addEventListener("dragstart", handleBucketItemDragStart);
+  bucketGrid.addEventListener("dragend", handleBucketItemDragEnd);
+  bucketGrid.addEventListener("dragover", handleBucketItemDragOver);
+  bucketGrid.addEventListener("dragenter", handleBucketDropZoneDragEnter);
+  bucketGrid.addEventListener("dragleave", handleBucketDropZoneDragLeave);
+  bucketGrid.addEventListener("drop", handleBucketDropZoneDrop);
 
   resetBucketlisterButton.addEventListener("click", () => {
     if (!confirm("Reset all Bucketlister settings and items?")) {
@@ -508,16 +526,69 @@ function handleBucketItemClick(event) {
   renderBucketlister();
 }
 
-function handleBucketItemChange(event) {
-  const selector = event.target.closest("[data-bucket-select]");
-  if (!selector) {
+function handleBucketItemDragStart(event) {
+  const card = event.target.closest("[data-bucket-item-card]");
+  if (!card) {
+    return;
+  }
+
+  draggedBucketItemId = card.dataset.bucketItemCard;
+  card.classList.add("dragging");
+  event.dataTransfer.effectAllowed = "move";
+  event.dataTransfer.setData("text/lifeapps-bucket-item", draggedBucketItemId);
+  event.dataTransfer.setData("text/plain", draggedBucketItemId);
+}
+
+function handleBucketItemDragEnd() {
+  draggedBucketItemId = "";
+  document.querySelectorAll(".item-card.dragging, .bucket-card.drag-over, .item-list.drag-over").forEach((element) => {
+    element.classList.remove("dragging", "drag-over");
+  });
+}
+
+function handleBucketItemDragOver(event) {
+  event.preventDefault();
+  event.dataTransfer.dropEffect = "move";
+}
+
+function handleBucketDropZoneDragEnter(event) {
+  const dropZone = event.target.closest("[data-bucket-drop]");
+  if (dropZone && bucketGrid.contains(dropZone)) {
+    dropZone.classList.add("drag-over");
+  }
+}
+
+function handleBucketDropZoneDragLeave(event) {
+  const dropZone = event.target.closest("[data-bucket-drop]");
+  if (dropZone && !dropZone.contains(event.relatedTarget)) {
+    dropZone.classList.remove("drag-over");
+  }
+}
+
+function handleBucketDropZoneDrop(event) {
+  const dropZone = event.target.closest("[data-bucket-drop]");
+  if (!dropZone) {
+    return;
+  }
+
+  handleBucketItemDrop(event, dropZone.dataset.bucketDrop);
+}
+
+function handleBucketItemDrop(event, bucketId) {
+  event.preventDefault();
+  const itemId =
+    event.dataTransfer.getData("text/lifeapps-bucket-item") ||
+    event.dataTransfer.getData("text/plain") ||
+    draggedBucketItemId;
+  if (!itemId) {
     return;
   }
 
   state.bucketlister.items = state.bucketlister.items.map((item) =>
-    item.id === selector.dataset.bucketSelect ? { ...item, bucketId: selector.value } : item,
+    item.id === itemId ? { ...item, bucketId } : item,
   );
   saveState();
+  handleBucketItemDragEnd();
   renderBucketlister();
 }
 
@@ -535,64 +606,44 @@ function render() {
 
 function renderBucketlister() {
   const buckets = getBuckets();
-  renderBucketItems(buckets);
+  renderBucketItems();
   renderBucketGrid(buckets);
 }
 
-function renderBucketItems(buckets) {
+function renderBucketItems() {
   bucketItemList.innerHTML = "";
+
+  const unassignedItems = state.bucketlister.items.filter((item) => item.bucketId === "unassigned");
 
   if (!state.bucketlister.items.length) {
     bucketItemList.append(createEmptyState("Add your first bucket list item to start planning."));
     return;
   }
 
-  state.bucketlister.items.forEach((item) => {
-    const card = document.createElement("article");
-    card.className = "item-card";
+  if (!unassignedItems.length) {
+    bucketItemList.append(createEmptyState("All items are assigned to life buckets."));
+    return;
+  }
 
-    const title = document.createElement("strong");
-    title.textContent = item.name;
-
-    const actions = document.createElement("div");
-    actions.className = "item-actions";
-
-    const select = document.createElement("select");
-    select.dataset.bucketSelect = item.id;
-    select.setAttribute("aria-label", `Choose bucket for ${item.name}`);
-    select.append(new Option("Unassigned", "unassigned"));
-    buckets.forEach((bucket) => {
-      select.append(new Option(bucket.label, bucket.id));
-    });
-    select.value = item.bucketId;
-
-    const deleteButton = document.createElement("button");
-    deleteButton.className = "small-button";
-    deleteButton.type = "button";
-    deleteButton.textContent = "Remove";
-    deleteButton.dataset.deleteBucketItem = item.id;
-
-    actions.append(select, deleteButton);
-    card.append(title, actions);
-    bucketItemList.append(card);
+  unassignedItems.forEach((item) => {
+    bucketItemList.append(createBucketItemCard(item));
   });
 }
 
 function renderBucketGrid(buckets) {
   bucketGrid.innerHTML = "";
 
-  const unassignedItems = state.bucketlister.items.filter((item) => item.bucketId === "unassigned");
-  bucketGrid.append(createBucketCard("Unassigned", unassignedItems));
-
   buckets.forEach((bucket) => {
     const bucketItems = state.bucketlister.items.filter((item) => item.bucketId === bucket.id);
-    bucketGrid.append(createBucketCard(bucket.label, bucketItems));
+    bucketGrid.append(createBucketCard(bucket.label, bucketItems, bucket.id));
   });
 }
 
-function createBucketCard(label, items) {
+function createBucketCard(label, items, bucketId) {
   const card = document.createElement("article");
   card.className = "bucket-card";
+  card.dataset.bucketDrop = bucketId;
+  card.setAttribute("aria-label", `${label}. Drop bucket list items here.`);
 
   const header = document.createElement("div");
   header.className = "bucket-card-header";
@@ -607,19 +658,44 @@ function createBucketCard(label, items) {
   header.append(title, count);
   card.append(header);
 
+  const list = document.createElement("div");
+  list.className = "bucket-item-card-list";
+
   if (!items.length) {
-    card.append(createEmptyState("Nothing here yet."));
+    list.append(createEmptyState("Drop items here."));
+    card.append(list);
     return card;
   }
 
-  const list = document.createElement("ul");
   items.forEach((item) => {
-    const listItem = document.createElement("li");
-    listItem.textContent = item.name;
-    list.append(listItem);
+    list.append(createBucketItemCard(item));
   });
 
   card.append(list);
+  return card;
+}
+
+function createBucketItemCard(item) {
+  const card = document.createElement("article");
+  card.className = "item-card";
+  card.draggable = true;
+  card.dataset.bucketItemCard = item.id;
+  card.setAttribute("aria-label", `${item.name}. Drag to a life bucket to assign this item.`);
+
+  const title = document.createElement("strong");
+  title.textContent = item.name;
+
+  const actions = document.createElement("div");
+  actions.className = "item-actions";
+
+  const deleteButton = document.createElement("button");
+  deleteButton.className = "small-button";
+  deleteButton.type = "button";
+  deleteButton.textContent = "Remove";
+  deleteButton.dataset.deleteBucketItem = item.id;
+
+  actions.append(deleteButton);
+  card.append(title, actions);
   return card;
 }
 

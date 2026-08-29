@@ -599,6 +599,31 @@ main {
   margin-top: 1rem;
 }
 
+.item-list-heading {
+  margin-top: 1rem;
+}
+
+.item-list-heading h4,
+.item-list-heading p {
+  margin: 0;
+}
+
+.item-list-heading h4 {
+  font-size: 1rem;
+}
+
+.item-list-heading p {
+  color: var(--muted);
+  line-height: 1.5;
+  margin-top: 0.25rem;
+}
+
+.item-list {
+  border: 1px dashed transparent;
+  border-radius: 1rem;
+  min-height: 5.25rem;
+}
+
 .bucket-grid {
   grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
 }
@@ -616,12 +641,10 @@ main {
   margin: 0;
 }
 
-.bucket-card ul {
+.bucket-item-card-list {
   display: grid;
   gap: 0.5rem;
-  list-style: none;
   margin: 0.85rem 0 0;
-  padding: 0;
 }
 
 .item-card,
@@ -632,6 +655,18 @@ main {
   display: grid;
   gap: 0.85rem;
   padding: 0.9rem;
+}
+
+.item-card {
+  cursor: grab;
+}
+
+.item-card:active {
+  cursor: grabbing;
+}
+
+.item-card.dragging {
+  opacity: 0.55;
 }
 
 .value-card {
@@ -647,7 +682,9 @@ main {
 }
 
 .value-bank.drag-over,
-.value-column.drag-over {
+.value-column.drag-over,
+.bucket-card.drag-over,
+.item-list.drag-over {
   border-color: var(--accent);
   box-shadow: 0 0 0 4px rgba(182, 106, 60, 0.16);
 }

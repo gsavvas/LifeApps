@@ -14,7 +14,7 @@ Features:
 - Set the age to plan through.
 - Choose 5-year or 10-year bucket sizes.
 - Add bucket list items.
-- Assign each item to an age bucket or leave it unassigned.
+- Drag items from Unassigned into age buckets.
 - Remove bucket list items.
 - Reset Bucketlister data for the selected user.
 
