@@ -100,81 +100,11 @@
         <div class="panel">
           <h3>How it works</h3>
           <ol>
-            <li>Sort the 51 values below from "Not important" to "Most important"</li>
+            <li>Sort the 83 values below from "Not important" to "Most important"</li>
             <li>Review your results and drag between columns.</li>
             <li>Save your results as a PDF or generate a link to share</li>
             <li>Compare your results with someone else by following a link they shared with you</li>
           </ol>
-        </div>
-
-        <div class="panel compare-panel">
-          <div>
-            <h3>Compare Value Sorts</h3>
-            <p>
-              Choose another user to compare sorted values. Values left unsorted by either user are not included.
-            </p>
-          </div>
-          <label>
-            Compare with
-            <select id="compare-user-select">
-              <option value="">No comparison</option>
-            </select>
-          </label>
-          <div class="comparison-results" id="comparison-results" hidden>
-            <p class="comparison-summary" id="comparison-summary"></p>
-            <fieldset class="comparison-view-toggle">
-              <legend>Comparison view</legend>
-              <label>
-                <input type="radio" name="comparison-view" value="columns" checked />
-                Four columns
-              </label>
-              <label>
-                <input type="radio" name="comparison-view" value="matrix" />
-                4x4 matrix
-              </label>
-            </fieldset>
-            <div class="comparison-columns" id="comparison-columns-view">
-              <div class="comparison-column">
-                <h3>Very Different <span class="count-badge" id="very-different-count">0</span></h3>
-                <p>The two users' choices are separated by three levels.</p>
-                <div class="comparison-list" id="very-different-values"></div>
-                <p class="comparison-total">Total: <span id="very-different-total">0</span></p>
-              </div>
-              <div class="comparison-column">
-                <h3>Quite Different <span class="count-badge" id="quite-different-count">0</span></h3>
-                <p>The two users' choices are separated by two levels.</p>
-                <div class="comparison-list" id="quite-different-values"></div>
-                <p class="comparison-total">Total: <span id="quite-different-total">0</span></p>
-              </div>
-              <div class="comparison-column">
-                <h3>Slightly Different <span class="count-badge" id="slightly-different-count">0</span></h3>
-                <p>The two users' choices are separated by one level.</p>
-                <div class="comparison-list" id="slightly-different-values"></div>
-                <p class="comparison-total">Total: <span id="slightly-different-total">0</span></p>
-              </div>
-              <div class="comparison-column">
-                <h3>Same <span class="count-badge" id="same-count">0</span></h3>
-                <p>Both users chose the same importance level.</p>
-                <div class="comparison-list" id="same-values"></div>
-                <p class="comparison-total">Total: <span id="same-total">0</span></p>
-              </div>
-            </div>
-            <div class="comparison-matrix" id="comparison-matrix-view" hidden></div>
-          </div>
-        </div>
-
-        <div class="panel share-panel">
-          <div>
-            <h3>Share Results</h3>
-            <p>Generate a link that another person can open to compare against your current value sort.</p>
-          </div>
-          <button class="secondary-button" type="button" id="print-results">Print Sorted Results</button>
-          <button class="secondary-button" type="button" id="share-results">Generate Share Link</button>
-          <label class="full-width">
-            Share link
-            <input id="share-link" type="text" readonly />
-          </label>
-          <p class="share-status" id="share-status" aria-live="polite"></p>
         </div>
 
         <div class="value-layout">
@@ -182,6 +112,76 @@
             <h3>Unsorted Values <span class="count-badge" id="unsorted-count">0</span></h3>
             <div class="value-card-list" id="value-bank"></div>
           </aside>
+
+          <div class="panel share-panel">
+            <div>
+              <h3>Share Results</h3>
+              <p>Generate a link that another person can open to compare against your current value sort.</p>
+            </div>
+            <button class="secondary-button" type="button" id="print-results">Print Sorted Results</button>
+            <button class="secondary-button" type="button" id="share-results">Generate Share Link</button>
+            <label class="full-width">
+              Share link
+              <input id="share-link" type="text" readonly />
+            </label>
+            <p class="share-status" id="share-status" aria-live="polite"></p>
+          </div>
+
+          <div class="panel compare-panel">
+            <div>
+              <h3>Compare Value Sorts</h3>
+              <p>
+                Choose another user to compare sorted values. Values left unsorted by either user are not included.
+              </p>
+            </div>
+            <label>
+              Compare with
+              <select id="compare-user-select">
+                <option value="">No comparison</option>
+              </select>
+            </label>
+            <div class="comparison-results" id="comparison-results" hidden>
+              <p class="comparison-summary" id="comparison-summary"></p>
+              <fieldset class="comparison-view-toggle">
+                <legend>Comparison view</legend>
+                <label>
+                  <input type="radio" name="comparison-view" value="columns" checked />
+                  Four columns
+                </label>
+                <label>
+                  <input type="radio" name="comparison-view" value="matrix" />
+                  4x4 matrix
+                </label>
+              </fieldset>
+              <div class="comparison-columns" id="comparison-columns-view">
+                <div class="comparison-column">
+                  <h3>Very Different <span class="count-badge" id="very-different-count">0</span></h3>
+                  <p>The two users' choices are separated by three levels.</p>
+                  <div class="comparison-list" id="very-different-values"></div>
+                  <p class="comparison-total">Total: <span id="very-different-total">0</span></p>
+                </div>
+                <div class="comparison-column">
+                  <h3>Quite Different <span class="count-badge" id="quite-different-count">0</span></h3>
+                  <p>The two users' choices are separated by two levels.</p>
+                  <div class="comparison-list" id="quite-different-values"></div>
+                  <p class="comparison-total">Total: <span id="quite-different-total">0</span></p>
+                </div>
+                <div class="comparison-column">
+                  <h3>Slightly Different <span class="count-badge" id="slightly-different-count">0</span></h3>
+                  <p>The two users' choices are separated by one level.</p>
+                  <div class="comparison-list" id="slightly-different-values"></div>
+                  <p class="comparison-total">Total: <span id="slightly-different-total">0</span></p>
+                </div>
+                <div class="comparison-column">
+                  <h3>Same <span class="count-badge" id="same-count">0</span></h3>
+                  <p>Both users chose the same importance level.</p>
+                  <div class="comparison-list" id="same-values"></div>
+                  <p class="comparison-total">Total: <span id="same-total">0</span></p>
+                </div>
+              </div>
+              <div class="comparison-matrix" id="comparison-matrix-view" hidden></div>
+            </div>
+          </div>
 
           <div class="value-columns" aria-live="polite">
             <div class="value-column" data-value-group="notImportant">
