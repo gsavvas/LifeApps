@@ -2,6 +2,7 @@ const STORAGE_KEY = "lifeapps-state-v1";
 const VALUE_SET_VERSION = "act-value-sort-2001-descriptions";
 const SHARE_PARAM = "sharedValues";
 const SHARE_TYPE = "lifeapps-value-sort";
+const VALUE_GROUP_KEYS = ["unsorted", "notImportant", "important", "veryImportant", "mostImportant"];
 const SHARE_GROUP_CODES = {
   unsorted: "u",
   notImportant: "n",
@@ -185,6 +186,7 @@ function init() {
   if (importedUser) {
     comparedUserId = importedUser.id;
   }
+  saveState();
 
   bindUserSwitcher();
   bindNavigation();
@@ -250,9 +252,6 @@ function normalizeAppState(storedState) {
 
 function normalizeUserData(userData = {}) {
   const storedValueAligner = userData.valueAligner;
-  const hasCurrentValueSet =
-    storedValueAligner?.valueSetVersion === VALUE_SET_VERSION &&
-    storedValueAligner?.values?.length;
 
   return {
     bucketlister: {
@@ -262,9 +261,7 @@ function normalizeUserData(userData = {}) {
     },
     valueAligner: {
       valueSetVersion: VALUE_SET_VERSION,
-      values: hasCurrentValueSet
-        ? storedValueAligner.values
-        : createDefaultValueRecords(storedValueAligner?.values ?? []),
+      values: createDefaultValueRecords(storedValueAligner?.values ?? []),
     },
   };
 }
@@ -293,7 +290,11 @@ function createDefaultUserData() {
 }
 
 function createDefaultValueRecords(existingValues = []) {
-  const existingByName = new Map(existingValues.map((value) => [value.name, value]));
+  const existingByName = new Map(
+    existingValues
+      .filter((value) => typeof value?.name === "string" && value.name.trim())
+      .map((value) => [value.name.trim(), { ...value, name: value.name.trim() }]),
+  );
   const defaultNames = new Set(defaultValues.map((value) => value.name));
   const defaultRecords = defaultValues.map((value) => {
     const existingValue = existingByName.get(value.name);
@@ -302,19 +303,23 @@ function createDefaultValueRecords(existingValues = []) {
       id: existingValue?.id ?? createId(),
       name: value.name,
       description: value.description,
-      group: existingValue?.group ?? "unsorted",
+      group: normalizeValueGroup(existingValue?.group),
     };
   });
-  const customRecords = existingValues
+  const customRecords = Array.from(existingByName.values())
     .filter((value) => !defaultNames.has(value.name))
     .map((value) => ({
       id: value.id ?? createId(),
       name: value.name,
       description: value.description ?? "",
-      group: value.group ?? "unsorted",
+      group: normalizeValueGroup(value.group),
     }));
 
   return [...defaultRecords, ...customRecords];
+}
+
+function normalizeValueGroup(group) {
+  return VALUE_GROUP_KEYS.includes(group) ? group : "unsorted";
 }
 
 function bindUserSwitcher() {
@@ -760,8 +765,6 @@ function importSharedValueSortFromUrl() {
 }
 
 function normalizeSharedValues(values) {
-  const validGroups = new Set(Object.keys(valueGroupLabels));
-
   return values
     .map((value) => {
       const name = typeof value?.n === "string" ? value.n : value?.name;
@@ -771,7 +774,7 @@ function normalizeSharedValues(values) {
         id: createId(),
         name: typeof name === "string" ? name.trim() : "",
         description: typeof value?.description === "string" ? value.description : "",
-        group: validGroups.has(group) ? group : "unsorted",
+        group: normalizeValueGroup(group),
       };
     })
     .filter((value) => value.name)
