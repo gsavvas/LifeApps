@@ -113,15 +113,17 @@
             <div class="value-card-list" id="value-bank"></div>
           </aside>
 
+          <h3 class="results-title">Your results</h3>
+
           <div class="panel share-panel">
             <div>
               <h3>Share Results</h3>
               <p>Generate a link that another person can open to compare against your current value sort.</p>
             </div>
             <button class="secondary-button" type="button" id="print-results">Print Sorted Results</button>
-            <button class="secondary-button" type="button" id="share-results">Generate Share Link</button>
-            <label class="full-width">
-              Share link
+            <button class="secondary-button" type="button" id="share-results">Shareable Link</button>
+            <label class="full-width" id="share-link-label" hidden>
+              Shareable Link
               <input id="share-link" type="text" readonly />
             </label>
             <p class="share-status" id="share-status" aria-live="polite"></p>

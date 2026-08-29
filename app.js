@@ -125,6 +125,7 @@ const resetBucketlisterButton = document.querySelector("#reset-bucketlister");
 const resetValuesButton = document.querySelector("#reset-values");
 const printResultsButton = document.querySelector("#print-results");
 const shareResultsButton = document.querySelector("#share-results");
+const shareLinkLabel = document.querySelector("#share-link-label");
 const shareLinkInput = document.querySelector("#share-link");
 const shareStatus = document.querySelector("#share-status");
 const compareUserSelect = document.querySelector("#compare-user-select");
@@ -755,6 +756,7 @@ async function handleShareResults() {
   }
 
   const shareLink = createShareLink();
+  shareLinkLabel.hidden = false;
   shareLinkInput.value = shareLink;
   shareLinkInput.focus();
   shareLinkInput.select();
