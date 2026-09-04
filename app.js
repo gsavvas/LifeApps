@@ -120,6 +120,7 @@ const bucketItemForm = document.querySelector("#bucket-item-form");
 const bucketItemInput = document.querySelector("#bucket-item-input");
 const bucketItemList = document.querySelector("#bucket-item-list");
 const bucketGrid = document.querySelector("#bucket-grid");
+const printBucketlisterButton = document.querySelector("#print-bucketlister");
 const resetBucketlisterButton = document.querySelector("#reset-bucketlister");
 
 const resetValuesButton = document.querySelector("#reset-values");
@@ -195,6 +196,7 @@ function init() {
   bindBucketlister();
   bindValueAligner();
   bindComparison();
+  bindPrinting();
   renderUserSwitcher();
   syncInputsFromState();
   render();
@@ -259,13 +261,20 @@ function normalizeUserData(userData = {}) {
     bucketlister: {
       ...defaultState.bucketlister,
       ...userData.bucketlister,
-      items: userData.bucketlister?.items ?? [],
+      items: normalizeBucketItems(userData.bucketlister?.items ?? []),
     },
     valueAligner: {
       valueSetVersion: VALUE_SET_VERSION,
       values: createDefaultValueRecords(storedValueAligner?.values ?? []),
     },
   };
+}
+
+function normalizeBucketItems(items) {
+  return items.map((item) => ({
+    ...item,
+    completed: Boolean(item.completed),
+  }));
 }
 
 function createUser(name, data = createDefaultUserData(), id = createId()) {
@@ -387,6 +396,23 @@ function bindComparison() {
   });
 }
 
+function bindPrinting() {
+  printBucketlisterButton.addEventListener("click", () => printSection("printing-bucketlist"));
+  printResultsButton.addEventListener("click", () => printSection("printing-values"));
+
+  window.addEventListener("afterprint", clearPrintMode);
+}
+
+function printSection(printMode) {
+  clearPrintMode();
+  document.body.classList.add(printMode);
+  window.print();
+}
+
+function clearPrintMode() {
+  document.body.classList.remove("printing-bucketlist", "printing-values");
+}
+
 function renderCompareUserOptions() {
   const activeUser = getActiveUser();
   const comparisonUsers = appState.users.filter((user) => user.id !== activeUser.id);
@@ -457,6 +483,7 @@ function bindBucketlister() {
       id: createId(),
       name,
       bucketId: "unassigned",
+      completed: false,
     });
     bucketItemInput.value = "";
     saveState();
@@ -515,14 +542,27 @@ function updateBucketSettings() {
 }
 
 function handleBucketItemClick(event) {
+  const completeButton = event.target.closest("[data-toggle-bucket-item-completed]");
   const deleteButton = event.target.closest("[data-delete-bucket-item]");
-  if (!deleteButton) {
+
+  if (completeButton) {
+    state.bucketlister.items = state.bucketlister.items.map((item) =>
+      item.id === completeButton.dataset.toggleBucketItemCompleted
+        ? { ...item, completed: !item.completed }
+        : item,
+    );
+  }
+
+  if (deleteButton) {
+    state.bucketlister.items = state.bucketlister.items.filter(
+      (item) => item.id !== deleteButton.dataset.deleteBucketItem,
+    );
+  }
+
+  if (!completeButton && !deleteButton) {
     return;
   }
 
-  state.bucketlister.items = state.bucketlister.items.filter(
-    (item) => item.id !== deleteButton.dataset.deleteBucketItem,
-  );
   saveState();
   renderBucketlister();
 }
@@ -678,7 +718,7 @@ function createBucketCard(label, items, bucketId) {
 
 function createBucketItemCard(item) {
   const card = document.createElement("article");
-  card.className = "item-card";
+  card.className = item.completed ? "item-card completed" : "item-card";
   card.draggable = true;
   card.dataset.bucketItemCard = item.id;
   card.setAttribute("aria-label", `${item.name}. Drag to a life bucket to assign this item.`);
@@ -686,8 +726,18 @@ function createBucketItemCard(item) {
   const title = document.createElement("strong");
   title.textContent = item.name;
 
+  const status = document.createElement("span");
+  status.className = "item-status";
+  status.textContent = item.completed ? "Completed" : "Not completed";
+
   const actions = document.createElement("div");
   actions.className = "item-actions";
+
+  const completeButton = document.createElement("button");
+  completeButton.className = "small-button";
+  completeButton.type = "button";
+  completeButton.textContent = item.completed ? "Mark Incomplete" : "Mark Complete";
+  completeButton.dataset.toggleBucketItemCompleted = item.id;
 
   const deleteButton = document.createElement("button");
   deleteButton.className = "small-button";
@@ -695,8 +745,8 @@ function createBucketItemCard(item) {
   deleteButton.textContent = "Remove";
   deleteButton.dataset.deleteBucketItem = item.id;
 
-  actions.append(deleteButton);
-  card.append(title, actions);
+  actions.append(completeButton, deleteButton);
+  card.append(title, status, actions);
   return card;
 }
 
@@ -716,7 +766,6 @@ function getBuckets() {
 }
 
 function bindValueAligner() {
-  printResultsButton.addEventListener("click", () => window.print());
   shareResultsButton.addEventListener("click", handleShareResults);
 
   Object.values(valueContainers).forEach((container) => {

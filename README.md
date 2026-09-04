@@ -15,7 +15,9 @@ Features:
 - Choose 5-year or 10-year bucket sizes.
 - Add bucket list items.
 - Drag items from Unassigned into age buckets.
+- Mark bucket list items complete or incomplete.
 - Remove bucket list items.
+- Print a clean bucket list view without item actions.
 - Reset Bucketlister data for the selected user.
 
 ### Value Aligner
